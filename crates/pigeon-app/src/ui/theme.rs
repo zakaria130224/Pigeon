@@ -1,6 +1,8 @@
 //! Colours, the look of widgets, and small display helpers.
 
-use eframe::egui::{self, Color32, CornerRadius, FontFamily, FontId, Stroke, Vec2};
+use std::sync::Arc;
+
+use eframe::egui::{self, Color32, CornerRadius, FontData, FontDefinitions, FontFamily, FontId, Stroke, Vec2};
 
 /// Pigeon teal, from the app icon.
 const ACCENT: Color32 = Color32::from_rgb(0x12, 0x9a, 0x90);
@@ -59,6 +61,20 @@ pub fn palette(dark: bool) -> Palette {
             warn: Color32::from_rgb(0xa1, 0x6a, 0x00),
         }
     }
+}
+
+/// Puts Inter first for the interface and JetBrains Mono first for code. egui's own fonts stay behind them as
+/// fallbacks for icons and emoji. The NL build of JetBrains Mono has no ligatures, so `!=` and `=>` show as typed.
+pub fn install_fonts(ctx: &egui::Context) {
+    let mut fonts = FontDefinitions::default();
+    for (name, family, bytes) in [
+        ("Inter", FontFamily::Proportional, &include_bytes!("../../../../assets/fonts/Inter-Regular.ttf")[..]),
+        ("JetBrains Mono NL", FontFamily::Monospace, &include_bytes!("../../../../assets/fonts/JetBrainsMonoNL-Regular.ttf")[..]),
+    ] {
+        fonts.font_data.insert(name.to_owned(), Arc::new(FontData::from_static(bytes)));
+        fonts.families.entry(family).or_default().insert(0, name.to_owned());
+    }
+    ctx.set_fonts(fonts);
 }
 
 pub fn apply_theme(ctx: &egui::Context, dark: bool) {

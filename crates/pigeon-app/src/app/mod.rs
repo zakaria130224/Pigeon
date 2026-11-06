@@ -264,6 +264,7 @@ impl App {
     pub fn new(cc: &eframe::CreationContext<'_>, screenshot: Option<PathBuf>) -> Self {
         let no_disk = screenshot.is_some();
         let settings = if no_disk { Settings::default() } else { settings::load_settings() };
+        install_fonts(&cc.egui_ctx);
         apply_theme(&cc.egui_ctx, settings.dark);
         let ws = settings.workspace.clone().unwrap_or_else(settings::default_workspace);
         let mut app = App {

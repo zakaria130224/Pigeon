@@ -46,7 +46,7 @@ takes you back to the table. Descriptions aren't shown in the text, but a row ke
 stays the same.
 
 Press **Save** or **⌘S** to save. An unsaved request shows a dot on its tab. The **</>** button shows the
-request as cURL, JavaScript or Python, ready to copy.
+request as cURL, JavaScript or Python, coloured and with line numbers, ready to copy. Long lines scroll sideways.
 
 | Shortcut | Action |
 | --- | --- |
@@ -224,6 +224,9 @@ for your git service first. If a push is refused, see [Troubleshooting](troubles
 
 Click the gear in the top bar for the theme, following redirects, pulling at start-up, the request timeout, and
 the project folder. The Pigeon version is shown at the bottom.
+
+Pigeon comes with its own fonts, so it looks the same on every computer: Inter for the interface and JetBrains Mono
+for code. Their licenses are in `FONT-LICENSES.txt`, installed alongside the app.
 
 ## Where your data lives
 

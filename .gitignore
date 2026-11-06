@@ -1,3 +1,54 @@
+# Build output and packages
 /target
 /dist
+**/*.rs.bk
+
+# Coverage, profiling and mutation testing
+*.profraw
+*.profdata
+lcov.info
+/coverage
+/mutants.out*
+
+# Screenshots from `--screenshot`, saved in the repository root
+/*.png
+
+# Logs and leftovers from merges
+*.log
+*.orig
+*.rej
+
+# Secrets and signing files: these must never reach the repository
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.cer
+*.mobileprovision
+
+# Editors
+.idea/
+.vscode/
+.fleet/
+.zed/
+*.iml
+*.sublime-project
+*.sublime-workspace
+*.swp
+*.swo
+*~
+
+# Personal AI assistant settings (the shared CLAUDE.md stays tracked)
+.claude/settings.local.json
+CLAUDE.local.md
+
+# Operating systems
 .DS_Store
+.AppleDouble
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+.directory
