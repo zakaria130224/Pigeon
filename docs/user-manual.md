@@ -46,7 +46,7 @@ takes you back to the table. Descriptions aren't shown in the text, but a row ke
 stays the same.
 
 Press **Save** or **⌘S** to save. An unsaved request shows a dot on its tab. The **</>** button shows the
-request as cURL, JavaScript or Python, ready to copy.
+request as cURL, JavaScript or Python, coloured and with line numbers, ready to copy. Long lines scroll sideways.
 
 | Shortcut | Action |
 | --- | --- |

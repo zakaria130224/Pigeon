@@ -22,6 +22,22 @@ fn variables_and_curl() {
 }
 
 #[test]
+fn curl_snippet_puts_each_part_on_its_own_line_and_imports_back() {
+    let mut req = Request { method: "POST".into(), url: "https://x.test/p".into(), ..Default::default() };
+    req.headers.push(Kv::new("Accept", "json"));
+    req.body.mode = BodyMode::Raw;
+    req.body.raw = "it's".into();
+    let vars = http::Vars::build(None, None, &[]);
+    let snippet = http::curl_snippet(&http::prepare(&req, &req.auth, &vars));
+    let lines: Vec<&str> = snippet.lines().collect();
+    assert_eq!(lines[0], "curl --location --request POST \\");
+    assert_eq!(lines[1], "  'https://x.test/p' \\");
+    assert!(lines[2].starts_with("  --header 'Accept: json'"));
+    let back = http::parse_curl(&snippet).unwrap();
+    assert_eq!((back.method.as_str(), back.url.as_str(), back.body.raw.as_str()), ("POST", "https://x.test/p", "it's"));
+}
+
+#[test]
 fn bulk_text_reads_pasted_headers() {
     let rows = kv_from_text("Accept: application/json\n\n  // X-Off : 1\nReferer: https://a.test:8080/x\nflag\n:\n", &[]);
     assert_eq!(

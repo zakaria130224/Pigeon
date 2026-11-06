@@ -172,17 +172,15 @@ impl App {
                 });
                 let chain = self.auth_chain_for(rt.origin.as_deref(), &rt.req.id);
                 let pr = http::prepare(&rt.req, &http::effective_auth(&rt.req, &chain), &vars);
-                let code = match rt.code_lang {
-                    1 => http::fetch_snippet(&pr),
-                    2 => http::python_snippet(&pr),
-                    _ => http::curl_snippet(&pr),
+                let (code, colours): (String, CodeColouring) = match rt.code_lang {
+                    1 => (http::fetch_snippet(&pr), js_job),
+                    2 => (http::python_snippet(&pr), python_job),
+                    _ => (http::curl_snippet(&pr), shell_job),
                 };
                 if ui.small_button("Copy").clicked() {
                     ui.ctx().copy_text(code.clone());
                 }
-                egui::ScrollArea::both().id_salt("codescroll").show(ui, |ui| {
-                    ui.add(egui::TextEdit::multiline(&mut code.as_str()).font(egui::TextStyle::Monospace).desired_width(f32::INFINITY));
-                });
+                code_view(ui, "codescroll", &code, dark, colours);
             });
         }
 

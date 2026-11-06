@@ -9,6 +9,7 @@
 
 ### Changed
 
+- The code snippet panel looks like a code editor: coloured code, line numbers, and long lines scroll instead of wrapping
 - Key and value tables are tidier: rows sit flush, text lines up with its column and is centred, turned-off rows fade
 - The request name lines up with its folder path, and the URL bar text is centred in a bar as tall as Send
 - Workspaces are now called projects in the app

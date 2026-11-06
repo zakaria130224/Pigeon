@@ -7,7 +7,7 @@ fn shell_quote(s: &str) -> String {
 }
 
 pub fn curl_snippet(p: &Prepared) -> String {
-    let mut s = format!("curl --location --request {} {}", p.method, shell_quote(&p.url));
+    let mut s = format!("curl --location --request {} \\\n  {}", p.method, shell_quote(&p.url));
     for (k, v) in &p.headers {
         s.push_str(&format!(" \\\n  --header {}", shell_quote(&format!("{}: {}", k, v))));
     }
