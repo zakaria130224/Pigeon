@@ -225,6 +225,9 @@ for your git service first. If a push is refused, see [Troubleshooting](troubles
 Click the gear in the top bar for the theme, following redirects, pulling at start-up, the request timeout, and
 the project folder. The Pigeon version is shown at the bottom.
 
+Pigeon comes with its own fonts, so it looks the same on every computer: Inter for the interface and JetBrains Mono
+for code. Their licenses are in `FONT-LICENSES.txt`, installed alongside the app.
+
 ## Where your data lives
 
 | What | macOS | Windows | Linux |

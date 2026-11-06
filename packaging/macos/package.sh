@@ -20,6 +20,7 @@ rm -rf "$STAGE"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp target/release/pigeon "$APP/Contents/MacOS/pigeon"
 cp assets/icon/pigeon.icns "$APP/Contents/Resources/pigeon.icns"
+cp assets/fonts/FONT-LICENSES.txt "$APP/Contents/Resources/FONT-LICENSES.txt"
 sed "s/@VERSION@/$VERSION/g" packaging/macos/Info.plist > "$APP/Contents/Info.plist"
 
 if [ "$IDENTITY" = "-" ]; then

@@ -23,11 +23,13 @@ mkdir -p dist
 ZIP_DIR=$WORK/Pigeon-$VERSION-windows-x86_64
 mkdir -p "$ZIP_DIR"
 cp "$WINDOWS_BIN" "$ZIP_DIR/pigeon.exe"
+cp assets/fonts/FONT-LICENSES.txt "$ZIP_DIR/"
 (cd "$WORK" && zip -qr "$ROOT/dist/Pigeon-$VERSION-windows-x86_64.zip" "Pigeon-$VERSION-windows-x86_64")
 makensis -V2 \
     -DVERSION="$VERSION" \
     -DEXE="$WINDOWS_BIN" \
     -DICON="$ROOT/assets/icon/pigeon.ico" \
+    -DFONT_LICENSES="$ROOT/assets/fonts/FONT-LICENSES.txt" \
     -DOUT="$ROOT/dist/Pigeon-$VERSION-windows-x86_64-setup.exe" \
     packaging/windows/pigeon.nsi
 
@@ -35,16 +37,18 @@ makensis -V2 \
 TAR_DIR=$WORK/Pigeon-$VERSION-linux-x86_64
 mkdir -p "$TAR_DIR"
 cp "$LINUX_BIN" "$TAR_DIR/pigeon"
-cp packaging/linux/pigeon.desktop packaging/linux/install.sh assets/icon/pigeon-256.png assets/icon/pigeon-512.png "$TAR_DIR/"
+cp packaging/linux/pigeon.desktop packaging/linux/install.sh assets/icon/pigeon-256.png assets/icon/pigeon-512.png \
+    assets/fonts/FONT-LICENSES.txt "$TAR_DIR/"
 chmod +x "$TAR_DIR/install.sh"
 tar -czf "dist/Pigeon-$VERSION-linux-x86_64.tar.gz" -C "$WORK" "Pigeon-$VERSION-linux-x86_64"
 
 # ---- Linux: Debian and Ubuntu package
 DEB=$WORK/deb
-mkdir -p "$DEB/DEBIAN" "$DEB/usr/bin" "$DEB/usr/share/applications" \
+mkdir -p "$DEB/DEBIAN" "$DEB/usr/bin" "$DEB/usr/share/applications" "$DEB/usr/share/doc/pigeon" \
     "$DEB/usr/share/icons/hicolor/256x256/apps" "$DEB/usr/share/icons/hicolor/512x512/apps"
 install -m 755 "$LINUX_BIN" "$DEB/usr/bin/pigeon"
 install -m 644 packaging/linux/pigeon.desktop "$DEB/usr/share/applications/pigeon.desktop"
+install -m 644 assets/fonts/FONT-LICENSES.txt "$DEB/usr/share/doc/pigeon/FONT-LICENSES.txt"
 install -m 644 assets/icon/pigeon-256.png "$DEB/usr/share/icons/hicolor/256x256/apps/pigeon.png"
 install -m 644 assets/icon/pigeon-512.png "$DEB/usr/share/icons/hicolor/512x512/apps/pigeon.png"
 SIZE=$(du -sk "$DEB/usr" | cut -f1)
