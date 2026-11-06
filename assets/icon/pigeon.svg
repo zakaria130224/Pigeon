@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2FB5A8"/>
+      <stop offset="1" stop-color="#0E6E78"/>
+    </linearGradient>
+  </defs>
+  <rect x="64" y="64" width="896" height="896" rx="200" fill="url(#sky)"/>
+  <!-- tail -->
+  <path d="M312 560 L150 690 L212 716 L176 800 L402 668 Z" fill="#CFE9E6"/>
+  <!-- body and head -->
+  <path d="M250 548
+           C 268 396 402 322 512 322
+           C 536 256 604 216 668 232
+           C 722 245 756 288 760 336
+           L 862 372
+           L 758 410
+           C 748 556 640 704 462 704
+           C 342 704 262 648 250 548 Z" fill="#FFFFFF"/>
+  <!-- wing -->
+  <path d="M352 470
+           C 430 420 556 424 628 476
+           C 590 590 470 640 362 604
+           C 330 560 330 510 352 470 Z" fill="#BFE3DF"/>
+  <!-- eye -->
+  <circle cx="662" cy="316" r="27" fill="#0E6E78"/>
+</svg>

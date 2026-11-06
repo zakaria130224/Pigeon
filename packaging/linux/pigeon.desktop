@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Pigeon
+GenericName=API Client
+Comment=Build, test and share API requests through git
+Exec=pigeon
+Icon=pigeon
+Terminal=false
+Categories=Development;Network;
+Keywords=api;rest;http;request;git;
+StartupWMClass=pigeon

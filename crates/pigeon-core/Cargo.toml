@@ -1,0 +1,16 @@
+[package]
+name = "pigeon-core"
+description = "Everything in Pigeon that doesn't need a window"
+version.workspace = true
+edition.workspace = true
+publish.workspace = true
+
+[dependencies]
+dirs = "7.0.0"
+rquickjs = "0.14.0"
+serde.workspace = true
+serde_json.workspace = true
+ureq = "3.5.1"
+
+[lints]
+workspace = true
