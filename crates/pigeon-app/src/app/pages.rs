@@ -107,8 +107,11 @@ impl App {
         ui.add_space(4.0);
         ui.horizontal(|ui| {
             ui.spacing_mut().item_spacing.x = 2.0;
-            for (i, l) in ["Overview", "Authorization", "Variables", "Scripts"].iter().enumerate() {
-                if tab_label(ui, *sub == i, l, None, dark).clicked() {
+            let has_auth = !matches!(c.auth.kind, AuthKind::Inherit | AuthKind::None);
+            let has_vars = c.variables.iter().any(|v| v.enabled && !v.key.is_empty());
+            let tabs = [("Overview", false), ("Authorization", has_auth), ("Scripts", !c.scripts.is_empty()), ("Variables", has_vars)];
+            for (i, (label, in_use)) in tabs.into_iter().enumerate() {
+                if tab_label(ui, *sub == i, label, in_use.then(|| "●".to_string()), dark).clicked() {
                     *sub = i;
                 }
             }
@@ -138,14 +141,6 @@ impl App {
                 }
             }
             2 => {
-                ui.label(RichText::new("Collection variables are available to every request in this collection.").small().color(p.weak));
-                ui.add_space(4.0);
-                if kv_table(ui, "collvars", &mut c.variables, &vars, dark, "Variable", false) {
-                    changed = true;
-                }
-                script_values(ui, &mut self.settings.script_vars, id, &mut clear_local, dark);
-            }
-            _ => {
                 ui.label(
                     RichText::new("These run for every request in this collection, before the request's own scripts.")
                         .small()
@@ -155,6 +150,14 @@ impl App {
                 if scripts_editor(ui, &mut c.scripts, &vars, dark) {
                     changed = true;
                 }
+            }
+            _ => {
+                ui.label(RichText::new("Collection variables are available to every request in this collection.").small().color(p.weak));
+                ui.add_space(4.0);
+                if kv_table(ui, "collvars", &mut c.variables, &vars, dark, "Variable", false) {
+                    changed = true;
+                }
+                script_values(ui, &mut self.settings.script_vars, id, &mut clear_local, dark);
             }
         });
         if changed {

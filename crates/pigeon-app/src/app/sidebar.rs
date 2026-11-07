@@ -186,6 +186,10 @@ impl App {
             Some(TabKind::Request(rt)) => Some(rt.req.id.clone()),
             _ => None,
         };
+        let active_coll = match self.tabs.get(self.active).map(|t| &t.kind) {
+            Some(TabKind::Collection { id, .. }) => Some(id.clone()),
+            _ => None,
+        };
         let filter = self.filter.to_lowercase();
         egui::ScrollArea::vertical().auto_shrink([false, false]).show(ui, |ui| {
             if self.collections.is_empty() {
@@ -204,19 +208,21 @@ impl App {
                     continue;
                 }
                 let open = self.expanded.contains(&c.id) || !filter.is_empty();
-                let resp = tree_row(ui, 0, false, dark, |ui| {
+                let selected = active_coll.as_deref() == Some(c.id.as_str());
+                let resp = tree_row(ui, 0, selected, dark, |ui| {
                     caret(ui, open, p.weak);
                     ui.label(RichText::new(&c.name).strong());
                 });
                 if resp.clicked() {
-                    if open {
+                    let on_caret = resp.interact_pointer_pos().is_some_and(|at| at.x < resp.rect.left() + CARET_HIT_W);
+                    if on_caret && open {
                         self.expanded.remove(&c.id);
                     } else {
                         self.expanded.insert(c.id.clone());
                     }
-                }
-                if resp.double_clicked() {
-                    actions.push(Action::OpenCollection(c.id.clone()));
+                    if !on_caret {
+                        actions.push(Action::OpenCollection(c.id.clone()));
+                    }
                 }
                 resp.context_menu(|ui| collection_menu(ui, &c.id, &mut actions));
                 if open {
@@ -758,6 +764,9 @@ fn elide_end(text: &str, most: usize) -> String {
     if text.chars().count() <= most { text.to_string() } else { format!("{}…", text.chars().take(most - 1).collect::<String>()) }
 }
 
+/// How far into a collection row a click counts as being on the caret, which folds it instead of opening its settings.
+const CARET_HIT_W: f32 = 22.0;
+
 pub(super) fn caret(ui: &mut Ui, open: bool, color: Color32) {
     let (r, _) = ui.allocate_exact_size(Vec2::splat(14.0), Sense::hover());
     let c = r.center();
@@ -792,7 +801,7 @@ fn sized_row(ui: &mut Ui, height: f32, depth: usize, selected: bool, dark: bool,
 
 fn collection_menu(ui: &mut Ui, cid: &str, actions: &mut Vec<Action>) {
     let c = cid.to_string();
-    if ui.button("Open overview").clicked() {
+    if ui.button("Collection settings").clicked() {
         actions.push(Action::OpenCollection(c.clone()));
         ui.close();
     }
