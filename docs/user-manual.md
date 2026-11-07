@@ -70,9 +70,10 @@ applies to POST and other requests that change data, so a server could receive s
 Use **New › Collection**, then right-click a collection or folder for everything else: add a request or folder,
 rename, duplicate, move up or down, export and delete.
 
-Double-click a collection, or choose **Open overview**, to edit its description, authorization, variables and
-scripts. For a folder, choose **Edit folder**. Requests set to "Inherit" use the authorization of the nearest
-folder or collection above them.
+Click a collection to open its settings: **Overview**, **Authorization**, **Scripts** and **Variables**. A dot on a
+tab means it has something set. Click the small arrow beside the name to fold the collection without opening it.
+For a folder, choose **Edit folder**. Requests set to "Inherit" use the authorization of the nearest folder or
+collection above them.
 
 The search box in the top bar filters collections and history by name or URL.
 
@@ -90,7 +91,7 @@ with a "did you mean" hint under the URL when a name looks mistyped.
 | Kind | Where to edit it | Shared with the team? |
 | --- | --- | --- |
 | Environment | Environments in the left rail. Pick the active one at the top right. | Yes |
-| Collection | Collection overview, Variables tab | Yes |
+| Collection | Click the collection, then the Variables tab | Yes |
 | Global | Environments, then Globals | No, this computer only |
 
 If a name exists in more than one place, the environment wins, then the collection, then globals.

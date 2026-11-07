@@ -125,6 +125,10 @@ pub(super) fn script_values(
 pub(super) fn auth_editor(ui: &mut Ui, auth: &mut Auth, allow_inherit: bool, vars: &Vars, dark: bool) -> bool {
     let p = palette(dark);
     let mut changed = false;
+    // A collection has no parent, and one saved without auth means the same as No Auth.
+    if !allow_inherit && auth.kind == AuthKind::Inherit {
+        auth.kind = AuthKind::None;
+    }
     ui.horizontal(|ui| {
         ui.label(RichText::new("Auth Type").color(p.weak));
         egui::ComboBox::from_id_salt("authkind").selected_text(auth.kind.label()).width(200.0).show_ui(ui, |ui| {
@@ -156,7 +160,7 @@ pub(super) fn auth_editor(ui: &mut Ui, auth: &mut Auth, allow_inherit: bool, var
             ui.label(RichText::new("Uses the authorization of the parent folder or collection.").color(p.weak));
         }
         AuthKind::None => {
-            ui.label(RichText::new("This request does not use any authorization.").color(p.weak));
+            ui.label(RichText::new("No authorization is sent.").color(p.weak));
         }
         AuthKind::Bearer => field(ui, "Token", &mut auth.token, false),
         AuthKind::Basic => {
