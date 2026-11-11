@@ -6,6 +6,8 @@
 
 - Bulk Edit on Params and Headers: edit rows as `key:value` text, one per line
 - Projects: switch between recent project folders from the top bar or the sidebar title
+- Scripts can use `CryptoJS` (and `require("crypto-js")`) as in Postman, for hashes such as MD5 and SHA-256, HMAC
+  signatures and AES
 
 ### Changed
 

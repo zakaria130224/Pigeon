@@ -150,7 +150,18 @@ An unknown name stops the run. `pm.setNextRequest` does the same.
 
 `console.log`, `.info`, `.debug`, `.warn` and `.error` write to the Console. `setTimeout`, `setInterval`,
 `setImmediate`, their `clear` versions, `btoa` and `atob` are available, along with standard JavaScript such as
-`JSON`, `Date`, `Math`, `Promise` and `RegExp`.
+`JSON`, `Date`, `Math`, `Promise` and `RegExp`. `crypto.getRandomValues` fills a typed array with secure random
+bytes.
+
+## CryptoJS
+
+The crypto-js library (version 4.2.0) is available as `CryptoJS`, or through `require("crypto-js")`, as in Postman.
+It covers hashes, HMAC, encodings and ciphers:
+
+```js
+const token = CryptoJS.MD5(pm.environment.get("channel") + ":" + date).toString();
+const signature = CryptoJS.HmacSHA256(body, secret).toString(CryptoJS.enc.Base64);
+```
 
 ## Older scripts
 
@@ -160,5 +171,6 @@ Scripts written in the older style also work: `tests["name"] = true`, `responseB
 
 ## Not available
 
-`require` (it stops the script with a clear error), so libraries such as lodash, crypto-js and moment can't be used.
+`require` for anything other than crypto-js (it stops the script with a clear error), so libraries such as lodash and
+moment can't be used.
 Also `pm.visualizer`, `pm.iterationData` from data files, and browser or Node features such as `fetch` and `fs`.

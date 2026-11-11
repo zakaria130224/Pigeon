@@ -649,7 +649,18 @@
     }
     return o;
   };
+  g.crypto = {
+    getRandomValues: (array) => {
+      if (!ArrayBuffer.isView(array) || array instanceof Float32Array || array instanceof Float64Array) {
+        throw new TypeError("crypto.getRandomValues needs an integer typed array");
+      }
+      if (array.byteLength > 65536) throw new Error("crypto.getRandomValues can fill at most 65536 bytes at once");
+      new Uint8Array(array.buffer, array.byteOffset, array.byteLength).set(__random(array.byteLength));
+      return array;
+    },
+  };
   g.require = (name) => {
+    if (name === "crypto-js" && g.CryptoJS) return g.CryptoJS;
     throw new Error('The library "' + name + '" is not available in scripts here.');
   };
 

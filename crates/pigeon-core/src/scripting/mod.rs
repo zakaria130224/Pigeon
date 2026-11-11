@@ -17,6 +17,8 @@ use std::sync::mpsc::{Receiver, channel};
 use std::time::{Duration, Instant};
 
 const PRELUDE: &str = include_str!("prelude.js");
+/// The crypto-js library, as Postman offers it. Only loaded when a script names it, as it is large.
+const CRYPTO_JS: &str = include_str!("crypto-js.js");
 const MEMORY_LIMIT: usize = 256 * 1024 * 1024;
 const MAX_LOGS: usize = 1000;
 
@@ -342,6 +344,13 @@ fn js_error(ctx: &Ctx<'_>, e: JsError) -> String {
     }
 }
 
+/// Secure random bytes for `crypto.getRandomValues`, at most 64 KiB at a time as in browsers.
+fn random_bytes(count: usize) -> rquickjs::Result<Vec<u8>> {
+    let mut bytes = vec![0; count.min(65536)];
+    getrandom::fill(&mut bytes).map_err(|e| rquickjs::Error::new_from_js_message("host", "bytes", e.to_string()))?;
+    Ok(bytes)
+}
+
 /// Runs one script in a fresh sandbox and returns what it produced.
 fn execute(code: &str, input: &str, job: &Job, calls: Rc<RefCell<Vec<ResponseData>>>) -> Result<Value, String> {
     let started = Instant::now();
@@ -375,7 +384,11 @@ fn execute(code: &str, input: &str, job: &Job, calls: Rc<RefCell<Vec<ResponseDat
                     answer
                 };
                 globals.set("__http", Function::new(ctx.clone(), host)?)?;
+                globals.set("__random", Function::new(ctx.clone(), random_bytes)?)?;
                 ctx.eval::<(), _>(PRELUDE)?;
+                if code.contains("CryptoJS") || code.contains("crypto-js") {
+                    ctx.eval::<(), _>(CRYPTO_JS)?;
+                }
                 globals.get::<_, Function>("__init")?.call::<_, ()>((input.to_string(),))?;
                 globals.get::<_, Function>("__run")?.call::<_, ()>((code.to_string(),))
             };

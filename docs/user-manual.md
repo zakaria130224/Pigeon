@@ -244,7 +244,7 @@ opens and keeps using the same project folder.
 ## What Pigeon doesn't do yet
 
 - Uploading files in form-data bodies
-- Libraries in scripts through `require` (such as lodash, crypto-js or moment) and `pm.visualizer`
+- Libraries in scripts through `require` (such as lodash or moment; crypto-js does work) and `pm.visualizer`
 - OAuth sign-in flows (paste a token you got elsewhere instead)
 - Keeping cookies between requests
 - OpenAPI files in YAML, and Swagger 2 files
