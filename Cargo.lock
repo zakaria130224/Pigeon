@@ -2524,7 +2524,7 @@ dependencies = [
 
 [[package]]
 name = "pigeon-app"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "chrono",
  "eframe",
@@ -2537,7 +2537,7 @@ dependencies = [
 
 [[package]]
 name = "pigeon-core"
-version = "1.0.0"
+version = "1.1.0"
 dependencies = [
  "dirs",
  "getrandom 0.3.4",

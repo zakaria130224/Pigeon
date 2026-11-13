@@ -33,7 +33,8 @@ Check this table before the first public release, and update it as items are don
    `cargo test --workspace`, then `cargo test --workspace -- --ignored`.
 4. **Merge** to `main` and wait for CI to pass on all three systems.
 5. **Tag it:** `git tag v1.2.3 && git push origin v1.2.3`. The tag must match the version or the build stops.
-6. **Wait for the Release workflow.** It builds every package and creates a **draft** release with `SHA256SUMS.txt`.
+6. **Wait for the Release workflow.** It builds every package and creates a **draft** release with `SHA256SUMS.txt`,
+   using the version's `CHANGELOG.md` section as its notes, so the heading must be exactly `## X.Y.Z`.
 7. **Verify** the packages using the checks below, on clean computers.
 8. **Publish** the draft on GitHub. Nothing is public until you do this.
 
