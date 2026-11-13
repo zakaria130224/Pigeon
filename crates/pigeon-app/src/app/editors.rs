@@ -97,9 +97,9 @@ pub(super) fn script_values(
     let Some(values) = all.get(id).filter(|v| !v.is_empty()) else { return };
     ui.add_space(12.0);
     ui.horizontal(|ui| {
-        ui.label(RichText::new("Set by scripts").strong());
+        ui.label(RichText::new("Set on this computer").strong());
         ui.label(
-            RichText::new("Only on this computer. These are used instead of the values above and are never pushed to your team.")
+            RichText::new("By scripts or from a response. These are used instead of the values above and are never pushed to your team.")
                 .small()
                 .color(p.weak),
         );

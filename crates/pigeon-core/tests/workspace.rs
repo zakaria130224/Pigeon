@@ -129,3 +129,14 @@ fn long_project_paths_keep_their_end() {
     assert_eq!(short.chars().count(), 10);
     assert!(short.starts_with('…') && short.ends_with("api"), "{short}");
 }
+
+#[test]
+fn collection_headers_save_and_old_collections_load_without_them() {
+    let d = tmp("collheaders");
+    let mut c = sample_collection();
+    c.headers.push(Kv::new("x-source-user-id", "GCS_1234"));
+    workspace::save(&d, std::slice::from_ref(&c), &[]).unwrap();
+    assert_eq!(workspace::load(&d).collections[0].headers, c.headers);
+    let old: Collection = serde_json::from_str(r#"{"id":"c","name":"Old"}"#).unwrap();
+    assert!(old.headers.is_empty());
+}

@@ -56,7 +56,8 @@ The collection runner calls the same function in a loop on one thread, carrying 
 ## Scripting
 
 `prelude.js` implements the whole `pm` API in JavaScript, and the Rust side passes JSON in and out. The engine
-only needs one host function, `__http`, for `pm.sendRequest`. This keeps the API easy to extend.
+only needs two host functions: `__http`, for `pm.sendRequest`, and `__random`, for `crypto.getRandomValues`. This keeps
+the API easy to extend. `crypto-js.js` is the unmodified crypto-js library, loaded only into scripts that name it.
 
 Every script gets a fresh QuickJS runtime with a memory limit and a deadline enforced by an interrupt handler. Timers
 are driven from Rust. The sandbox exposes no file or process access.

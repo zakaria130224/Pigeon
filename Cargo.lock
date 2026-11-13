@@ -2540,6 +2540,7 @@ name = "pigeon-core"
 version = "1.0.0"
 dependencies = [
  "dirs",
+ "getrandom 0.3.4",
  "rquickjs",
  "serde",
  "serde_json",

@@ -148,6 +148,7 @@ impl App {
         Job {
             req: req.clone(),
             auth_chain: self.auth_chain_for(coll, &req.id),
+            headers: self.collection_headers(coll),
             scripts,
             timeout_s: self.settings.timeout_s,
             follow_redirects: self.settings.follow_redirects,
@@ -198,6 +199,10 @@ impl App {
             self.console.log_response(call, "pm.sendRequest");
         }
         self.apply_changes(coll, &outcome.changes);
+    }
+
+    pub(super) fn collection_headers(&self, coll: Option<&str>) -> Vec<Kv> {
+        coll.and_then(|c| self.coll(c)).map(|c| c.headers.clone()).unwrap_or_default()
     }
 
     pub(super) fn auth_chain_for(&self, coll: Option<&str>, req_id: &str) -> Vec<Auth> {

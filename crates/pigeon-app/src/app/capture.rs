@@ -5,7 +5,7 @@ use std::sync::atomic::Ordering;
 
 impl App {
     /// Test aid for screenshot runs: `PIGEON_QA_EVENTS` holds steps like
-    /// `20 click 680 153`, `30 down 10 10`, `35 up 10 10`, `40 text {{ba` and `50 key Enter`, one per line, each with its frame.
+    /// `20 click 680 153`, `25 rclick 680 153` (right button), `30 down 10 10`, `35 up 10 10`, `40 text {{ba` and `50 key Enter`, one per line, each with its frame.
     #[cfg(feature = "qa")]
     pub(super) fn scripted_input(&mut self, input: &mut egui::RawInput) {
         let Some(shot) = &self.shot else { return };
@@ -17,12 +17,12 @@ impl App {
                 continue;
             }
             match kind {
-                "click" | "down" | "up" | "move" => {
+                "click" | "rclick" | "down" | "up" | "move" => {
                     let mut xy = rest.split(' ').filter_map(|n| n.parse::<f32>().ok());
                     let pos = egui::pos2(xy.next().unwrap_or(0.0), xy.next().unwrap_or(0.0));
                     input.events.push(egui::Event::PointerMoved(pos));
                     let presses: &[bool] = match kind {
-                        "click" => &[true, false],
+                        "click" | "rclick" => &[true, false],
                         "down" => &[true],
                         "up" => &[false],
                         _ => &[],
@@ -30,7 +30,7 @@ impl App {
                     for pressed in presses {
                         input.events.push(egui::Event::PointerButton {
                             pos,
-                            button: egui::PointerButton::Primary,
+                            button: if kind == "rclick" { egui::PointerButton::Secondary } else { egui::PointerButton::Primary },
                             pressed: *pressed,
                             modifiers: egui::Modifiers::NONE,
                         });

@@ -30,7 +30,7 @@ PIGEON_QA_EVENTS='20 click 900 153
 ```
 
 `--screenshot` leaves your workspace alone. Each `PIGEON_QA_EVENTS` line is a frame number (up to 120) and an action:
-`click`, `down`, `up`, `move`, `text` or `key`, with positions in window points. With `qa`, `PIGEON_QA_PROJECTS` lists
+`click`, `rclick` (right button), `down`, `up`, `move`, `text` or `key`, with positions in window points. With `qa`, `PIGEON_QA_PROJECTS` lists
 recent folders, one per line, and `PIGEON_QA_SYNC=1` (or `conflict`) fills Team Sync. `qa` is never part of a release build.
 
 Packages go to `dist/`: `./packaging/macos/package.sh` on a Mac, `./packaging/build-windows-linux.sh` anywhere with
@@ -63,8 +63,10 @@ collection runner calls the same function in a loop on one thread, carrying vari
 ### Scripting
 
 `scripting/prelude.js` implements the entire `pm` API in JavaScript, and Rust passes JSON in and out. The only host
-function is `__http`, for `pm.sendRequest`. Each script gets a fresh QuickJS runtime with a memory limit and an
-interrupt-enforced deadline, and timers are driven from Rust. The sandbox has no file or process access.
+functions are `__http`, for `pm.sendRequest`, and `__random`, for `crypto.getRandomValues`. `scripting/crypto-js.js` is
+the unmodified crypto-js library, loaded only into scripts that mention it. Each script gets a fresh QuickJS runtime
+with a memory limit and an interrupt-enforced deadline, and timers are driven from Rust. The sandbox has no file or
+process access.
 
 ### Workspace and sync
 

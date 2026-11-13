@@ -29,7 +29,7 @@ A workspace is a folder of JSON files, designed to merge well in git.
 
 Empty optional fields are left out.
 
-**`collection.json`**: `id`, `name`, `description`, `auth`, `variables`, `scripts`
+**`collection.json`**: `id`, `name`, `description`, `auth`, `headers`, `variables`, `scripts`
 
 **`folder.json`**: `id`, `name`, `description`, `auth`, `scripts`, `order`
 

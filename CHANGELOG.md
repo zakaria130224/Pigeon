@@ -4,12 +4,17 @@
 
 ### Added
 
+- Collection headers: set headers once on a collection's Headers tab and every request in it sends them. A request
+  header with the same name takes priority
 - Bulk Edit on Params and Headers: edit rows as `key:value` text, one per line
 - Projects: switch between recent project folders from the top bar or the sidebar title
+- Scripts can use `CryptoJS` (and `require("crypto-js")`) as in Postman, for hashes such as MD5 and SHA-256, HMAC
+  signatures and AES
+- Select text in a response body and right-click it to keep it in an environment, collection or global variable
 
 ### Changed
 
-- Clicking a collection opens its settings (Authorization, Scripts, Variables), and tabs in use show a dot. The arrow
+- Clicking a collection opens its settings (Authorization, Headers, Scripts, Variables), and tabs in use show a dot. The arrow
   beside the name folds it
 - The code snippet panel looks like a code editor: coloured code, line numbers, and long lines scroll instead of wrapping
 - Key and value tables are tidier: rows sit flush, text lines up with its column and is centred, turned-off rows fade

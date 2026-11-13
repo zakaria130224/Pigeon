@@ -151,9 +151,9 @@ impl App {
                     self.env_view(ui, Some(id), now);
                 }
                 TabKind::Globals => self.env_view(ui, None, now),
-                TabKind::Collection { id, sub } => {
+                TabKind::Collection { id, sub, bulk_headers } => {
                     let id = id.clone();
-                    self.collection_view(ui, &id, sub, now);
+                    self.collection_view(ui, &id, sub, bulk_headers, now);
                 }
                 TabKind::Folder { coll, id } => {
                     let (c, f) = (coll.clone(), id.clone());

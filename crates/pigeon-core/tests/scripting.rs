@@ -221,6 +221,33 @@ fn older_style_scripts_work() {
 }
 
 #[test]
+fn crypto_js_is_available() {
+    let base = echo_server();
+    let mut scopes = env_scopes();
+    // Known answers, so the library is the real one and not a look-alike.
+    let pre = r#"
+        pm.environment.set("md5", CryptoJS.MD5("Android:28072023").toString());
+        pm.environment.set("sha256", CryptoJS.SHA256("abc").toString(CryptoJS.enc.Hex));
+        pm.environment.set("hmac", CryptoJS.HmacSHA256("data", "key").toString(CryptoJS.enc.Base64));
+        const lib = require("crypto-js");
+        const secret = lib.AES.encrypt("hello", "pass").toString();
+        pm.environment.set("aes", lib.AES.decrypt(secret, "pass").toString(lib.enc.Utf8));
+        pm.environment.set("random", String(CryptoJS.lib.WordArray.random(16).sigBytes));
+    "#;
+    let o = run_scripts(&base, pre, "", &mut scopes);
+    assert!(o.resp.script_error.is_none(), "{:?}", o.resp.script_error);
+    assert_eq!(scopes.environment["md5"], "a37ea3dfabeb7251c99a54fa788e142d");
+    assert_eq!(scopes.environment["sha256"], "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad");
+    assert_eq!(scopes.environment["hmac"], "UDH+PZicbRU3oBP6bnOdojRj/a7DtwE32Cjjas4iG9A=");
+    assert_eq!(scopes.environment["aes"], "hello");
+    assert_eq!(scopes.environment["random"], "16");
+    // Scripts that don't name it don't pay for loading it.
+    let o = run_scripts(&base, "pm.environment.set('t', typeof globalThis['Crypto' + 'JS']);", "", &mut scopes);
+    assert!(o.resp.script_error.is_none());
+    assert_eq!(scopes.environment["t"], "undefined");
+}
+
+#[test]
 fn assertions_behave_like_chai() {
     let base = echo_server();
     let pass = r#"

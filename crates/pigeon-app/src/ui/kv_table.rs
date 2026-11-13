@@ -55,7 +55,11 @@ pub fn kv_table(ui: &mut Ui, id: &str, rows: &mut Vec<Kv>, vars: &Vars, dark: bo
         let in_band = |left: f32, right: f32| Rect::from_min_max(Pos2::new(left, band.top()), Pos2::new(right, band.bottom()));
 
         if !is_new {
-            let check = ui.put(in_band(table.left(), edges[0]), egui::Checkbox::without_text(&mut row.enabled));
+            // A child UI, not `ui.put`, which would move the cursor into the table and let later widgets overlap it.
+            let rect = in_band(table.left(), edges[0]);
+            let mut child =
+                ui.new_child(egui::UiBuilder::new().max_rect(rect).layout(Layout::centered_and_justified(egui::Direction::LeftToRight)));
+            let check = child.add(egui::Checkbox::without_text(&mut row.enabled));
             changed |= check.on_hover_text("Include this row").changed();
         }
         let faded = !is_new && !row.enabled;

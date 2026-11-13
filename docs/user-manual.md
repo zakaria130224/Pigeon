@@ -34,7 +34,7 @@ Choose a method (GET, POST and so on), type a URL and press **Send** or **⌘↵
 | --- | --- |
 | Params | Query parameters. They stay in step with the URL. Untick a row to leave it out. |
 | Authorization | Inherit from the folder or collection, No Auth, Bearer Token, Basic Auth or API Key |
-| Headers | Your own headers. Content-Type and Authorization are added for you from the other tabs. |
+| Headers | Your own headers. Content-Type and Authorization are added for you from the other tabs, and the collection's headers are added unless you set one with the same name here. |
 | Body | none, form-data (text fields only), x-www-form-urlencoded, or raw with JSON, Text, XML, HTML or JavaScript. **Beautify** tidies JSON. |
 | Scripts | JavaScript that runs before sending and after the response. See [Scripts](#scripts). |
 | Tests | Point-and-click checks such as "Status code is 200" |
@@ -60,6 +60,9 @@ request as cURL, JavaScript or Python, coloured and with line numbers, ready to 
 
 - **Body** shows the answer. **Pretty** formats JSON and **Raw** shows it exactly as received.
 - **Headers** lists the response headers.
+- **Keep part of the body in a variable:** select text in the body, right-click it and choose the environment, the
+  collection or globals, then pick a variable or type a new name. As with values set by scripts, environment and
+  collection values stay on this computer and are listed under **Set on this computer**. **Copy** is in the same menu.
 - **Test Results** shows every check and `pm.test` with PASS or FAIL.
 
 If a connection is dropped partway, Pigeon tries again up to 3 times before showing an error. This also
@@ -70,9 +73,11 @@ applies to POST and other requests that change data, so a server could receive s
 Use **New › Collection**, then right-click a collection or folder for everything else: add a request or folder,
 rename, duplicate, move up or down, export and delete.
 
-Click a collection to open its settings: **Overview**, **Authorization**, **Scripts** and **Variables**. A dot on a
-tab means it has something set. Click the small arrow beside the name to fold the collection without opening it.
-For a folder, choose **Edit folder**. Requests set to "Inherit" use the authorization of the nearest folder or
+Click a collection to open its settings: **Overview**, **Authorization**, **Headers**, **Scripts** and **Variables**.
+A dot or count on a tab means it has something set. Click the small arrow beside the name to fold the collection without opening it.
+Collection **Headers** are sent with every request in the collection. When a request has its own header with the
+same name (case doesn't matter), the request's value is sent instead. A header added by a pre-request script counts as
+the request's own. For a folder, choose **Edit folder**. Requests set to "Inherit" use the authorization of the nearest folder or
 collection above them.
 
 The search box in the top bar filters collections and history by name or URL.
@@ -125,7 +130,7 @@ If a pre-request script fails, the request is not sent. A script is stopped afte
 
 **Values set by scripts stay on this computer.** When a script sets an environment or collection variable, the
 value is kept locally and used in place of the shared one, so a login token can't be pushed to your team by
-accident. You can see these under **Set by scripts** on the environment or collection page, and **Clear these**
+accident. You can see these under **Set on this computer** on the environment or collection page, and **Clear these**
 removes them.
 
 Everything available to scripts is in the [scripting reference](scripting-reference.md).
@@ -244,7 +249,7 @@ opens and keeps using the same project folder.
 ## What Pigeon doesn't do yet
 
 - Uploading files in form-data bodies
-- Libraries in scripts through `require` (such as lodash, crypto-js or moment) and `pm.visualizer`
+- Libraries in scripts through `require` (such as lodash or moment; crypto-js does work) and `pm.visualizer`
 - OAuth sign-in flows (paste a token you got elsewhere instead)
 - Keeping cookies between requests
 - OpenAPI files in YAML, and Swagger 2 files

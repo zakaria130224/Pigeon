@@ -1,7 +1,7 @@
 //! The request editor and the response below it.
 
 use super::*;
-use eframe::egui::{Align, Color32, FontId, Id, Layout, Pos2, Rect, RichText, Sense, Vec2};
+use eframe::egui::{Align, Color32, FontId, Id, Layout, PointerButton, Pos2, Rect, RichText, Sense, Vec2};
 use pigeon_core::suggest;
 
 /// Height inside the URL bar's border, which makes the whole bar as tall as the Send button.
@@ -171,7 +171,9 @@ impl App {
                     }
                 });
                 let chain = self.auth_chain_for(rt.origin.as_deref(), &rt.req.id);
-                let pr = http::prepare(&rt.req, &http::effective_auth(&rt.req, &chain), &vars);
+                let mut sent = rt.req.clone();
+                http::inherit_headers(&mut sent, &self.collection_headers(rt.origin.as_deref()), &vars);
+                let pr = http::prepare(&sent, &http::effective_auth(&sent, &chain), &vars);
                 let (code, colours): (String, CodeColouring) = match rt.code_lang {
                     1 => (http::fetch_snippet(&pr), js_job),
                     2 => (http::python_snippet(&pr), python_job),
@@ -228,7 +230,7 @@ impl App {
                 kv_section(ui, "headers", "Headers", &mut rt.req.headers, &mut rt.bulk_headers, &vars, dark);
                 ui.add_space(4.0);
                 ui.label(
-                    RichText::new("Content-Type and Authorization headers are added automatically from the Body and Authorization tabs.")
+                    RichText::new("Content-Type and Authorization headers are added automatically from the Body and Authorization tabs. Collection headers are sent too, unless one here has the same name.")
                         .small()
                         .color(p.weak),
                 );
@@ -368,26 +370,43 @@ impl App {
                 });
                 let text: &str = if rt.pretty { resp.pretty.as_deref().unwrap_or(&resp.body) } else { &resp.body };
                 let is_json = rt.pretty && resp.is_json() && text.len() < 2_000_000;
+                let mut picked = None;
                 egui::Frame::new().fill(p.header).corner_radius(4).inner_margin(8).show(ui, |ui| {
                     egui::ScrollArea::both().id_salt("respbody").auto_shrink([false, false]).show(ui, |ui| {
+                        let id = Id::unique(("respbody", rt.req.id.as_str(), rt.pretty));
+                        // Pressing the right button moves the cursor, so remember the selection from before.
+                        let focused = ui.memory(|m| m.has_focus(id));
+                        let before = egui::text_edit::TextEditState::load(ui.ctx(), id).and_then(|s| s.cursor.char_range());
+                        let right = ui.input(|i| i.pointer.button_pressed(PointerButton::Secondary) || i.pointer.secondary_down());
                         let mut t = text;
-                        if is_json {
-                            let mut lay = |ui: &Ui, buf: &dyn egui::TextBuffer, wrap: f32| {
-                                ui.fonts_mut(|f| f.layout_job(json_job(buf.as_str(), dark, wrap)))
-                            };
-                            ui.add(
-                                egui::TextEdit::multiline(&mut t).frame(egui::Frame::NONE).desired_width(f32::INFINITY).layouter(&mut lay),
-                            );
-                        } else {
-                            ui.add(
-                                egui::TextEdit::multiline(&mut t)
-                                    .frame(egui::Frame::NONE)
-                                    .font(egui::TextStyle::Monospace)
-                                    .desired_width(f32::INFINITY),
-                            );
+                        let mut lay = |ui: &Ui, buf: &dyn egui::TextBuffer, wrap: f32| {
+                            ui.fonts_mut(|f| f.layout_job(json_job(buf.as_str(), dark, wrap)))
+                        };
+                        let edit = egui::TextEdit::multiline(&mut t).id(id).frame(egui::Frame::NONE).desired_width(f32::INFINITY);
+                        let edit = if is_json { edit.layouter(&mut lay) } else { edit.font(egui::TextStyle::Monospace) };
+                        let out = edit.show(ui);
+                        let resp = out.response.response;
+                        if right && resp.hovered() {
+                            if let Some(range) = before.filter(|_| focused) {
+                                let mut state = out.state;
+                                state.cursor.set_char_range(Some(range));
+                                state.store(ui.ctx(), id);
+                            }
+                            if ui.input(|i| i.pointer.button_pressed(PointerButton::Secondary)) {
+                                rt.resp_pick = before.filter(|_| focused).map(|r| r.slice_str(text).to_string()).unwrap_or_default();
+                                rt.new_var.clear();
+                            }
                         }
+                        // Clicks inside stay open, so a new variable's name can be typed.
+                        egui::Popup::context_menu(&resp)
+                            .close_behavior(egui::PopupCloseBehavior::CloseOnClickOutside)
+                            .show(|ui| picked = self.set_variable_menu(ui, rt.origin.as_deref(), &rt.resp_pick, &mut rt.new_var));
                     });
                 });
+                if let Some((scope, key)) = picked {
+                    let now = ui.ctx().input(|i| i.time);
+                    self.set_variable(rt.origin.as_deref(), scope, &key, rt.resp_pick.clone(), now);
+                }
             }
             RespView::Headers => {
                 egui::ScrollArea::vertical().id_salt("respheaders").auto_shrink([false, false]).show(ui, |ui| {
@@ -427,4 +446,102 @@ impl App {
             }
         }
     }
+
+    /// The right-click menu on selected response text: copy it, or keep it in a variable.
+    fn set_variable_menu(&self, ui: &mut Ui, coll: Option<&str>, picked: &str, new_var: &mut String) -> Option<(VarScope, String)> {
+        let p = self.pal();
+        if picked.is_empty() {
+            ui.label(RichText::new("Select some text first, then right-click it.").color(p.weak));
+            return None;
+        }
+        ui.add(egui::Label::new(RichText::new(preview(picked)).monospace().small().color(p.weak)).truncate());
+        if ui.button("Copy").clicked() {
+            ui.ctx().copy_text(picked.to_string());
+            ui.close();
+        }
+        ui.separator();
+        let scopes = self.scopes_for(coll);
+        let mut out = None;
+        match self.active_env() {
+            Some(e) => {
+                ui.menu_button(format!("Set in environment “{}”", e.name), |ui| {
+                    out = variable_list(ui, &scopes.environment, new_var).map(|k| (VarScope::Environment, k));
+                });
+            }
+            None => {
+                ui.add_enabled(false, egui::Button::new("Set in environment"))
+                    .on_disabled_hover_text("No environment is active. Choose one at the top right first.");
+            }
+        }
+        if let Some(c) = coll.and_then(|c| self.coll(c)) {
+            ui.menu_button(format!("Set in collection “{}”", c.name), |ui| {
+                out = variable_list(ui, &scopes.collection, new_var).map(|k| (VarScope::Collection, k));
+            });
+        }
+        ui.menu_button("Set in globals", |ui| {
+            out = variable_list(ui, &scopes.globals, new_var).map(|k| (VarScope::Globals, k));
+        });
+        if out.is_some() {
+            ui.close();
+        }
+        out
+    }
+
+    /// Keep a value picked from a response. Like values set by scripts, environment and collection
+    /// values stay on this computer so a token copied from a response never reaches the team.
+    fn set_variable(&mut self, coll: Option<&str>, scope: VarScope, key: &str, value: String, now: f64) {
+        let entry = vec![(key.to_string(), Some(value))];
+        let (changes, place) = match scope {
+            VarScope::Environment => {
+                let name = self.active_env().map(|e| e.name.clone()).unwrap_or_default();
+                (Changes { environment: entry, ..Default::default() }, format!("environment “{}”", name))
+            }
+            VarScope::Collection => {
+                let name = coll.and_then(|c| self.coll(c)).map(|c| c.name.clone()).unwrap_or_default();
+                (Changes { collection: entry, ..Default::default() }, format!("collection “{}”", name))
+            }
+            VarScope::Globals => (Changes { globals: entry, ..Default::default() }, "globals".to_string()),
+        };
+        self.apply_changes(coll, &changes);
+        self.console.log(console::LogLevel::Info, format!("Set {{{{{}}}}} in {} from the response", key, place));
+        self.toast(format!("Set {{{{{}}}}} in {}", key, place), true, now);
+    }
+}
+
+#[derive(Clone, Copy)]
+enum VarScope {
+    Environment,
+    Collection,
+    Globals,
+}
+
+/// The variables of one scope to choose from, and a field for a new one. Returns the chosen name.
+fn variable_list(ui: &mut Ui, values: &BTreeMap<String, String>, new_var: &mut String) -> Option<String> {
+    let mut out = None;
+    if values.is_empty() {
+        ui.label(RichText::new("No variables yet").small().weak());
+    }
+    egui::ScrollArea::vertical().max_height(260.0).show(ui, |ui| {
+        for (key, value) in values {
+            if ui.button(RichText::new(key).monospace()).on_hover_text(format!("Now: {}", preview(value))).clicked() {
+                out = Some(key.clone());
+            }
+        }
+    });
+    ui.separator();
+    ui.horizontal(|ui| {
+        let r = ui.add(egui::TextEdit::singleline(new_var).hint_text("New variable name").desired_width(150.0));
+        let name = new_var.trim().to_string();
+        let enter = r.lost_focus() && ui.input(|i| i.key_pressed(egui::Key::Enter));
+        if (ui.add_enabled(!name.is_empty(), egui::Button::new("Set")).clicked() || enter) && !name.is_empty() {
+            out = Some(name);
+        }
+    });
+    out
+}
+
+/// A short, one-line version of a value for menus.
+fn preview(s: &str) -> String {
+    let line = s.split_whitespace().collect::<Vec<_>>().join(" ");
+    if line.chars().count() > 60 { format!("{}…", line.chars().take(60).collect::<String>()) } else { line }
 }
