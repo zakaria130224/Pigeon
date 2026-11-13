@@ -16,6 +16,17 @@ pub fn effective_auth(req: &Request, chain: &[Auth]) -> Auth {
     Auth::none()
 }
 
+/// Put the collection's headers in front of the request's own, leaving out any the request
+/// already sets. Names are compared after variables are filled in, ignoring case.
+pub fn inherit_headers(req: &mut Request, inherited: &[Kv], vars: &Vars) {
+    let name = |h: &Kv| vars.resolve(h.key.trim()).to_ascii_lowercase();
+    let on = |h: &&Kv| h.enabled && !h.key.trim().is_empty();
+    let own: Vec<String> = req.headers.iter().filter(on).map(name).collect();
+    let mut merged: Vec<Kv> = inherited.iter().filter(on).filter(|h| !own.contains(&name(h))).cloned().collect();
+    merged.append(&mut req.headers);
+    req.headers = merged;
+}
+
 pub fn base64(input: &[u8]) -> String {
     const T: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
     let mut out = String::new();

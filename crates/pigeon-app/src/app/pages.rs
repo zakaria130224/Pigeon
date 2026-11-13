@@ -81,7 +81,7 @@ impl App {
         }
     }
 
-    pub(super) fn collection_view(&mut self, ui: &mut Ui, id: &str, sub: &mut usize, now: f64) {
+    pub(super) fn collection_view(&mut self, ui: &mut Ui, id: &str, sub: &mut usize, bulk_headers: &mut Option<BulkEdit>, now: f64) {
         let p = self.pal();
         let dark = self.dark();
         let vars = self.vars_for(Some(id));
@@ -109,9 +109,17 @@ impl App {
             ui.spacing_mut().item_spacing.x = 2.0;
             let has_auth = !matches!(c.auth.kind, AuthKind::Inherit | AuthKind::None);
             let has_vars = c.variables.iter().any(|v| v.enabled && !v.key.is_empty());
-            let tabs = [("Overview", false), ("Authorization", has_auth), ("Scripts", !c.scripts.is_empty()), ("Variables", has_vars)];
-            for (i, (label, in_use)) in tabs.into_iter().enumerate() {
-                if tab_label(ui, *sub == i, label, in_use.then(|| "●".to_string()), dark).clicked() {
+            let nh = c.headers.iter().filter(|h| h.enabled && !h.key.is_empty()).count();
+            let dot = |on: bool| on.then(|| "●".to_string());
+            let tabs = [
+                ("Overview", None),
+                ("Authorization", dot(has_auth)),
+                ("Headers", (nh > 0).then(|| format!("({})", nh))),
+                ("Scripts", dot(!c.scripts.is_empty())),
+                ("Variables", dot(has_vars)),
+            ];
+            for (i, (label, badge)) in tabs.into_iter().enumerate() {
+                if tab_label(ui, *sub == i, label, badge, dark).clicked() {
                     *sub = i;
                 }
             }
@@ -141,6 +149,17 @@ impl App {
                 }
             }
             2 => {
+                if kv_section(ui, "collheaders", "Headers", &mut c.headers, bulk_headers, &vars, dark) {
+                    changed = true;
+                }
+                ui.add_space(4.0);
+                ui.label(
+                    RichText::new("Sent with every request in this collection. A request header with the same name takes priority.")
+                        .small()
+                        .color(p.weak),
+                );
+            }
+            3 => {
                 ui.label(
                     RichText::new("These run for every request in this collection, before the request's own scripts.")
                         .small()

@@ -81,6 +81,7 @@ pub fn job(req: Request, scripts: Vec<Scripts>) -> Job {
     Job {
         req,
         auth_chain: vec![],
+        headers: vec![],
         scripts: all,
         timeout_s: 10,
         follow_redirects: true,

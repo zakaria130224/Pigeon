@@ -219,7 +219,7 @@ impl App {
             }
             Action::OpenCollection(id) => {
                 if !self.focus_tab(|k| matches!(k, TabKind::Collection { id: x, .. } if x == &id)) {
-                    self.push_tab(TabKind::Collection { id, sub: 0 });
+                    self.push_tab(TabKind::Collection { id, sub: 0, bulk_headers: None });
                 }
             }
             Action::OpenFolder { coll, id } => {

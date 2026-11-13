@@ -302,6 +302,9 @@ pub struct Collection {
     pub description: String,
     #[serde(default)]
     pub auth: Auth,
+    /// Sent with every request in the collection, unless the request sets a header with the same name.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub headers: Vec<Kv>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub variables: Vec<Kv>,
     #[serde(default, skip_serializing_if = "Scripts::is_empty")]
@@ -317,6 +320,7 @@ impl Collection {
             name: name.into(),
             description: String::new(),
             auth: Auth::none(),
+            headers: vec![],
             variables: vec![],
             scripts: Scripts::default(),
             items: vec![],

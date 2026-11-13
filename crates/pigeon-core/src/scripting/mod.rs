@@ -68,6 +68,8 @@ impl Scopes {
 pub struct Job {
     pub req: Request,
     pub auth_chain: Vec<Auth>,
+    /// The collection's headers. A request header with the same name replaces one of these.
+    pub headers: Vec<Kv>,
     /// Outermost first, ending with the request's own scripts.
     pub scripts: Vec<Scripts>,
     pub timeout_s: u64,
@@ -131,6 +133,8 @@ pub fn run(job: &Job, scopes: &mut Scopes) -> Outcome {
 
     let pre = run_scripts(job, "prerequest", &mut req, scopes, None, &mut before, &mut tests, &mut next);
     let vars = scopes.vars();
+    // After the pre-request scripts, so a header they add to the request wins too.
+    http::inherit_headers(&mut req, &job.headers, &vars);
     let auth = http::effective_auth(&req, &job.auth_chain);
     let prepared = http::prepare(&req, &auth, &vars);
     let mut resp = match pre {

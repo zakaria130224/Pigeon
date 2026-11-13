@@ -135,3 +135,33 @@ fn live_request() {
     let resp = http::send(http::prepare(&r, &Auth::none(), &v), 20, true).recv().unwrap();
     assert_eq!(resp.status, 201, "{:?}", resp.error);
 }
+
+#[test]
+fn collection_headers_are_sent_unless_the_request_sets_the_same_name() {
+    let env = Environment { id: "e".into(), name: "x".into(), values: vec![Kv::new("h", "X-Trace")] };
+    let vars = http::Vars::build(Some(&env), None, &[]);
+    let mut req = Request { url: "https://x.test".into(), ..Default::default() };
+    req.headers.push(Kv::new("x-source-user-id", "request"));
+    req.headers.push(Kv { enabled: false, ..Kv::new("X-Off", "request") });
+    let inherited = vec![
+        Kv::new("X-Source-User-Id", "collection"),
+        Kv::new("X-Off", "collection"),
+        Kv::new("{{h}}", "collection"),
+        Kv { enabled: false, ..Kv::new("X-Disabled", "collection") },
+    ];
+    http::inherit_headers(&mut req, &inherited, &vars);
+    let sent = http::prepare(&req, &req.auth, &vars).headers;
+    let got: Vec<(&str, &str)> = sent.iter().map(|(k, v)| (k.as_str(), v.as_str())).collect();
+    assert_eq!(got, vec![("X-Off", "collection"), ("X-Trace", "collection"), ("x-source-user-id", "request")]);
+}
+
+#[test]
+fn collection_header_with_the_request_name_via_variable_is_replaced() {
+    let env = Environment { id: "e".into(), name: "x".into(), values: vec![Kv::new("h", "Accept")] };
+    let vars = http::Vars::build(Some(&env), None, &[]);
+    let mut req = Request { url: "https://x.test".into(), ..Default::default() };
+    req.headers.push(Kv::new("{{h}}", "text/plain"));
+    http::inherit_headers(&mut req, &[Kv::new("accept", "application/json")], &vars);
+    assert_eq!(req.headers.len(), 1);
+    assert_eq!(req.headers[0].value, "text/plain");
+}

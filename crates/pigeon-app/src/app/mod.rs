@@ -70,6 +70,10 @@ struct ReqTab {
     code_lang: usize,
     bulk_params: Option<BulkEdit>,
     bulk_headers: Option<BulkEdit>,
+    /// Text selected in the response body when its right-click menu opened.
+    resp_pick: String,
+    /// The name typed for a new variable in that menu.
+    new_var: String,
 }
 
 impl ReqTab {
@@ -88,6 +92,8 @@ impl ReqTab {
             code_lang: 0,
             bulk_params: None,
             bulk_headers: None,
+            resp_pick: String::new(),
+            new_var: String::new(),
         }
     }
     fn dirty(&self) -> bool {
@@ -126,7 +132,7 @@ enum TabKind {
     Request(Box<ReqTab>),
     Env(String),
     Globals,
-    Collection { id: String, sub: usize },
+    Collection { id: String, sub: usize, bulk_headers: Option<BulkEdit> },
     Folder { coll: String, id: String },
     Runner(Box<RunnerTab>),
 }
